@@ -7,9 +7,8 @@ import matplotlib.font_manager as fm
 import tempfile
 import os
 
-# Streamlit Cloud では os.getcwd() でカレントディレクトリを取得
-font_path = os.path.join(os.getcwd(), "fonts", "ipaexg.ttf")
-
+# ✅ 日本語フォントの設定（相対パスで fonts/ipaexg.ttf を読み込む）
+font_path = os.path.join("fonts", "ipaexg.ttf")
 if os.path.exists(font_path):
     font_prop = fm.FontProperties(fname=font_path)
     plt.rcParams['font.family'] = font_prop.get_name()
@@ -68,7 +67,8 @@ if st.button("📊 図を生成"):
         nx.draw(G, pos, with_labels=True, arrows=True,
                 node_color='lightblue', edge_color='gray',
                 node_size=2000, font_size=10,
-                font_family=font_prop.get_name(), ax=ax)
+                font_family=font_prop.get_name() if 'font_prop' in locals() else None,
+                ax=ax)
 
         st.pyplot(fig)
 
