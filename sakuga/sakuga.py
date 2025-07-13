@@ -3,8 +3,24 @@ import streamlit as st
 import re
 import networkx as nx
 import matplotlib.pyplot as plt
+import matplotlib.font_manager as fm
 import tempfile
 import os
+
+# 日本語フォントの設定（文字化け対策）
+possible_font_paths = [
+    "/usr/share/fonts/truetype/ipaexg/ipaexg.ttf",
+    "/usr/share/fonts/opentype/ipafont-gothic/ipagp.ttf",
+    "/usr/share/fonts/truetype/fonts-japanese-gothic.ttf",
+]
+
+font_path = next((path for path in possible_font_paths if os.path.exists(path)), None)
+
+if font_path:
+    font_prop = fm.FontProperties(fname=font_path)
+    plt.rcParams['font.family'] = font_prop.get_name()
+else:
+    st.warning("⚠️ 日本語フォントが見つかりません。文字化けの可能性があります。")
 
 # タイトルと説明
 st.title("🧠 日本語入力による自動作図ツール（networkx + matplotlib）")
@@ -16,8 +32,8 @@ with st.expander("📘 使い方を見る"):
 このツールでは、日本語の文章をもとに構造図（接続図）を自動で作成し、PNGやPDF形式で保存できます。
 
 ### 🔤 入力例：
-モーターは電源に接続される スイッチはモーターに接続される
-
+モーターは電源に接続される  
+スイッチはモーターに接続される
 
 上記のように、「〇〇は△△に接続される」という形式で複数行入力してください。
 
@@ -58,18 +74,19 @@ if st.button("📊 図を生成"):
         nx.draw(G, pos, with_labels=True, arrows=True,
                 node_color='lightblue', edge_color='gray',
                 node_size=2000, font_size=10, ax=ax)
+
         st.pyplot(fig)
 
         with tempfile.TemporaryDirectory() as tmpdir:
             if export_png:
                 png_path = os.path.join(tmpdir, "graph.png")
-                fig.savefig(png_path, format="png")
+                fig.savefig(png_path, format="png", bbox_inches='tight')
                 with open(png_path, "rb") as f:
                     st.download_button("⬇️ PNG形式でダウンロード", f, "graph.png", "image/png")
 
             if export_pdf:
                 pdf_path = os.path.join(tmpdir, "graph.pdf")
-                fig.savefig(pdf_path, format="pdf")
+                fig.savefig(pdf_path, format="pdf", bbox_inches='tight')
                 with open(pdf_path, "rb") as f:
                     st.download_button("⬇️ PDF形式でダウンロード", f, "graph.pdf", "application/pdf")
 
