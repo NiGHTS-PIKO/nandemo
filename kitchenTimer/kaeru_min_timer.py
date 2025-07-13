@@ -1,9 +1,9 @@
 import streamlit as st
 import time
 
-st.title("⏱️ コロン点滅・一時停止・リセット対応タイマー")
+st.title("⏱️ コロン常時点滅タイマー")
 
-# 🕹️ 入力欄
+# 🕹️ 時間設定
 col1, col2, col3 = st.columns(3)
 with col1:
     hours = st.number_input("時間", 0, 23, 0)
@@ -14,7 +14,7 @@ with col3:
 
 initial_total = int(hours * 3600 + minutes * 60 + seconds)
 
-# 🧠 セッション管理
+# 🧠 状態管理
 if "remaining" not in st.session_state:
     st.session_state.remaining = initial_total
 if "running" not in st.session_state:
@@ -24,7 +24,7 @@ if "paused" not in st.session_state:
 if "last_update" not in st.session_state:
     st.session_state.last_update = None
 
-# 🔘 操作ボタン
+# 🎮 操作ボタン
 colA, colB, colC = st.columns(3)
 with colA:
     if st.button("スタート"):
@@ -42,7 +42,7 @@ with colC:
         st.session_state.remaining = initial_total
         st.session_state.last_update = None
 
-# 🧮 時間更新（スタート時のみ）
+# ⏱️ タイマー更新（実行中のみ）
 if st.session_state.running and st.session_state.remaining > 0:
     now = time.time()
     elapsed = int(now - st.session_state.last_update)
@@ -50,22 +50,23 @@ if st.session_state.running and st.session_state.remaining > 0:
         st.session_state.remaining = max(0, st.session_state.remaining - elapsed)
         st.session_state.last_update = now
 
-# 🎇 表示（コロン点滅常時）
+# ⌛ コロン点滅演出（常時）
+colon = ":" if int(time.time()) % 2 == 0 else " "
+
+# 🖼️ 時間表示
 h = st.session_state.remaining // 3600
 m = (st.session_state.remaining % 3600) // 60
 s = st.session_state.remaining % 60
-colon = ":" if int(time.time()) % 2 == 0 else " "
-
 time_str = f"{h:02d}{colon}{m:02d}{colon}{s:02d}"
-placeholder = st.empty()
 
+placeholder = st.empty()
 if st.session_state.remaining > 0:
     if st.session_state.running:
         placeholder.markdown(f"## ▶️ {time_str}")
     elif st.session_state.paused:
         placeholder.markdown(f"## ⏸️ {time_str}")
     else:
-        placeholder.markdown(f"## ⏹️ {time_str}")  # 停止中（リセット済み）
+        placeholder.markdown(f"## ⏹️ {time_str}")
 else:
     placeholder.markdown("## ✅ タイマー終了！")
     st.session_state.running = False
