@@ -2,12 +2,12 @@ import streamlit as st
 import time
 from streamlit_autorefresh import st_autorefresh
 
-# 🔁 自動更新：0.1秒（100ms）ごとに描画
+# 🔁 0.1秒ごとに再描画（UIなめらか）
 st_autorefresh(interval=100, limit=None, key="tick")
 
-st.title("⏱️ 安定動作 × ゆったり点滅タイマー")
+st.title("⏱️ 正確な鼓動タイマー")
 
-# 🕹️ 入力欄
+# 🕹️ 時間設定欄
 col1, col2, col3 = st.columns(3)
 with col1:
     hours = st.number_input("時間", 0, 23, 0)
@@ -18,7 +18,7 @@ with col3:
 
 initial_total = int(hours * 3600 + minutes * 60 + seconds)
 
-# 🧠 状態初期化
+# 🧠 ステート初期化
 if "remaining" not in st.session_state:
     st.session_state.remaining = initial_total
 if "running" not in st.session_state:
@@ -46,24 +46,24 @@ with colC:
         st.session_state.remaining = initial_total
         st.session_state.last_update = None
 
-# ⏱️ 残り時間の更新
+# ⏱️ カウント処理（1秒単位で更新）
 if st.session_state.running and st.session_state.remaining > 0:
     now = time.time()
     elapsed = now - st.session_state.last_update
-    if elapsed >= 0.1:
+    if elapsed >= 1.0:
         st.session_state.remaining = max(0, st.session_state.remaining - int(elapsed))
         st.session_state.last_update = now
 
-# 💓 コロン点滅（1秒ごと）
+# 💓 コロン点滅（1秒間隔）
 colon = ":" if int(time.time()) % 2 == 0 else " "
 
-# 🖼️ 表示文字列
+# 🎨 表示構築
 h = st.session_state.remaining // 3600
 m = (st.session_state.remaining % 3600) // 60
 s = st.session_state.remaining % 60
 time_str = f"{h:02d}{colon}{m:02d}{colon}{s:02d}"
 
-# 📺 タイマーの状態表示
+# 📺 UI表示
 if st.session_state.remaining > 0:
     if st.session_state.running:
         st.markdown(f"## ▶️ {time_str}")
