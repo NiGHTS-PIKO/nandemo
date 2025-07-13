@@ -69,15 +69,15 @@ if st.button("⬇️ ファイルを保存"):
     else:
         dot = st.session_state["dot"]
         with tempfile.TemporaryDirectory() as tmpdirname:
-            base_path = os.path.join(tmpdirname, "graph")
-
             if export_png:
-                png_path = dot.render(base_path, format='png', cleanup=False)
+                dot.render(filename="graph", directory=tmpdirname, format="png", cleanup=True)
+                png_path = os.path.join(tmpdirname, "graph.png")
                 with open(png_path, "rb") as f:
                     st.download_button("PNG形式でダウンロード", f, "graph.png", "image/png")
 
             if export_pdf:
-                pdf_path = dot.render(base_path, format='pdf', cleanup=False)
+                dot.render(filename="graph", directory=tmpdirname, format="pdf", cleanup=True)
+                pdf_path = os.path.join(tmpdirname, "graph.pdf")
                 with open(pdf_path, "rb") as f:
                     st.download_button("PDF形式でダウンロード", f, "graph.pdf", "application/pdf")
 
