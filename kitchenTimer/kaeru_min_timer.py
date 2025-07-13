@@ -41,7 +41,7 @@ with colB:
         st.session_state.running = False
         st.session_state.paused = True
 with colC:
-    if st.button("リセット"):
+    if st.button("セット/リセット"):
         st.session_state.running = False
         st.session_state.paused = False
         st.session_state.remaining = initial_total
