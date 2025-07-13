@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 from streamlit_autorefresh import st_autorefresh
 
 # ⏳ 自動更新（1秒ごと）
-st_autorefresh(interval=1000, limit=None, key="autorefresh")
+st_autorefresh(interval=256, limit=None, key="autorefresh")
 
 # 🗓️ 日本語曜日マップ
 weekday_map = {
