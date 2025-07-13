@@ -26,8 +26,6 @@ with st.expander("📘 使い方を見る"):
     2. 図の向きを選択します（横向き or 縦向き）。
     3. 「図を生成（プレビュー）」ボタンを押します。
     4. 図を確認してから、保存形式を選んで「ファイルを保存」ボタンを押します。
-
-    ⚠️ 文の形式が正しくない場合は、図が生成されませんのでご注意ください。
     """)
 
 # 入力ボックス
@@ -55,19 +53,23 @@ if st.button("📊 図を生成（プレビュー）"):
         for src, dst in edges:
             dot.edge(src.strip(), dst.strip())
 
-        st.graphviz_chart(dot)
         st.session_state["dot"] = dot  # セッションに保存
+        st.success("✅ 図を生成しました。下にプレビューが表示されます。")
+        st.graphviz_chart(dot)
 
-# 保存処理（プレビュー後に表示）
-if "dot" in st.session_state:
-    st.markdown("💾 出力形式を選んで保存してください")
-    export_png = st.checkbox("PNG形式で保存")
-    export_pdf = st.checkbox("PDF形式で保存")
+# 保存形式の選択（常に表示）
+st.markdown("💾 保存形式を選んで「ファイルを保存」ボタンを押してください")
+export_png = st.checkbox("PNG形式で保存")
+export_pdf = st.checkbox("PDF形式で保存")
 
-    if st.button("⬇️ ファイルを保存"):
+# 保存ボタン（図が生成されていない場合は警告）
+if st.button("⬇️ ファイルを保存"):
+    if "dot" not in st.session_state:
+        st.warning("⚠️ 先に図を生成してください。")
+    else:
+        dot = st.session_state["dot"]
         with tempfile.TemporaryDirectory() as tmpdirname:
             base_path = os.path.join(tmpdirname, "graph")
-            dot = st.session_state["dot"]
 
             if export_png:
                 png_path = dot.render(base_path, format='png', cleanup=False)
