@@ -7,19 +7,19 @@ import matplotlib.font_manager as fm
 import tempfile
 import os
 
-# ✅ 日本語フォントの設定（相対パスで fonts/ipaexg.ttf を読み込む）
-font_path = os.path.join("fonts", "ipaexg.ttf")
+# sakuga.py の場所から fonts/ipaexg.ttf を探す
+base_dir = os.path.dirname(os.path.abspath(__file__))
+font_path = os.path.join(base_dir, "fonts", "ipaexg.ttf")
+
+st.text(f"📁 フォントパス: {font_path}")
+st.text(f"✅ 存在する？: {os.path.exists(font_path)}")
+
 if os.path.exists(font_path):
     font_prop = fm.FontProperties(fname=font_path)
     plt.rcParams['font.family'] = font_prop.get_name()
 else:
     st.warning("⚠️ IPAexフォントが見つかりません。文字化けの可能性があります。")
-
-st.text(f"📁 フォントパス: {font_path}")
-st.text(f"✅ 存在する？: {os.path.exists(font_path)}")
-
-
-
+    
 # タイトルと説明
 st.title("🧠 日本語入力による自動作図ツール（networkx + matplotlib）")
 st.markdown("自然な日本語で接続関係を記述するだけで、構造図を自動生成し、PNGやPDF形式で保存できます。")
