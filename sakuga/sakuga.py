@@ -7,20 +7,13 @@ import matplotlib.font_manager as fm
 import tempfile
 import os
 
-# 日本語フォントの設定（文字化け対策）
-possible_font_paths = [
-    "/usr/share/fonts/truetype/ipaexg/ipaexg.ttf",
-    "/usr/share/fonts/opentype/ipafont-gothic/ipagp.ttf",
-    "/usr/share/fonts/truetype/fonts-japanese-gothic.ttf",
-]
-
-font_path = next((path for path in possible_font_paths if os.path.exists(path)), None)
-
-if font_path:
+# 日本語フォントの設定（Streamlit Cloud対応）
+font_path = os.path.join(os.path.dirname(__file__), "fonts", "ipaexg.ttf")
+if os.path.exists(font_path):
     font_prop = fm.FontProperties(fname=font_path)
     plt.rcParams['font.family'] = font_prop.get_name()
 else:
-    st.warning("⚠️ 日本語フォントが見つかりません。文字化けの可能性があります。")
+    st.warning("⚠️ IPAexフォントが見つかりません。文字化けの可能性があります。")
 
 # タイトルと説明
 st.title("🧠 日本語入力による自動作図ツール（networkx + matplotlib）")
