@@ -5,7 +5,7 @@ from datetime import datetime, timedelta
 from streamlit_autorefresh import st_autorefresh
 
 # 🔁 秒単位でUI自動更新
-st_autorefresh(interval=1000, limit=None, key="autorefresh")
+st_autorefresh(interval=100, limit=None, key="autorefresh")
 
 # 🧠 セッション初期化（履歴も含む）
 if "start_time" not in st.session_state:
