@@ -2,12 +2,12 @@ import streamlit as st
 import time
 from streamlit_autorefresh import st_autorefresh
 
-# ⏳ 自動再描画（0.1秒ごと）
-st_autorefresh(interval=250, limit=None, key="tick")
+# 🔁 自動更新：0.1秒（100ms）ごとに描画
+st_autorefresh(interval=100, limit=None, key="tick")
 
-st.title("⏱️ 点滅コロン × リアル描画タイマー")
+st.title("⏱️ 安定動作 × ゆったり点滅タイマー")
 
-# 🧮 時間設定
+# 🕹️ 入力欄
 col1, col2, col3 = st.columns(3)
 with col1:
     hours = st.number_input("時間", 0, 23, 0)
@@ -18,7 +18,7 @@ with col3:
 
 initial_total = int(hours * 3600 + minutes * 60 + seconds)
 
-# 🧠 状態管理
+# 🧠 状態初期化
 if "remaining" not in st.session_state:
     st.session_state.remaining = initial_total
 if "running" not in st.session_state:
@@ -28,7 +28,7 @@ if "paused" not in st.session_state:
 if "last_update" not in st.session_state:
     st.session_state.last_update = None
 
-# 🎮 操作ボタン群
+# 🎮 操作ボタン
 colA, colB, colC = st.columns(3)
 with colA:
     if st.button("スタート"):
@@ -46,7 +46,7 @@ with colC:
         st.session_state.remaining = initial_total
         st.session_state.last_update = None
 
-# ⏱️ カウント処理（動作中のみ）
+# ⏱️ 残り時間の更新
 if st.session_state.running and st.session_state.remaining > 0:
     now = time.time()
     elapsed = now - st.session_state.last_update
@@ -54,16 +54,16 @@ if st.session_state.running and st.session_state.remaining > 0:
         st.session_state.remaining = max(0, st.session_state.remaining - int(elapsed))
         st.session_state.last_update = now
 
-# 💓 コロン点滅演出
-colon = ":" if int(time.time() * 2) % 2 == 0 else " "
+# 💓 コロン点滅（1秒ごと）
+colon = ":" if int(time.time()) % 2 == 0 else " "
 
-# 🎨 表示文字列
+# 🖼️ 表示文字列
 h = st.session_state.remaining // 3600
 m = (st.session_state.remaining % 3600) // 60
 s = st.session_state.remaining % 60
 time_str = f"{h:02d}{colon}{m:02d}{colon}{s:02d}"
 
-# 📺 状態表示
+# 📺 タイマーの状態表示
 if st.session_state.remaining > 0:
     if st.session_state.running:
         st.markdown(f"## ▶️ {time_str}")
