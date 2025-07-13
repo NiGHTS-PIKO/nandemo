@@ -1,51 +1,57 @@
 import streamlit as st
 import time
 
-st.title("⏱️ カウントダウンタイマー（操作可能）")
+st.title("⏱️ 操作可能なカウントダウンタイマー")
 
-# 🔧 時間指定
 col1, col2, col3 = st.columns(3)
 with col1:
-    hours = st.number_input("時間", min_value=0, max_value=23, value=0)
+    hours = st.number_input("時間", 0, 23, 0)
 with col2:
-    minutes = st.number_input("分", min_value=0, max_value=59, value=0)
+    minutes = st.number_input("分", 0, 59, 0)
 with col3:
-    seconds = st.number_input("秒", min_value=0, max_value=59, value=10)
+    seconds = st.number_input("秒", 0, 59, 10)
 
-total = int(hours * 3600 + minutes * 60 + seconds)
+initial_total = int(hours * 3600 + minutes * 60 + seconds)
 
-# 🧠 セッションステートの初期化
+# 🧠 セッション初期化
 if "remaining" not in st.session_state:
-    st.session_state.remaining = total
+    st.session_state.remaining = initial_total
 if "running" not in st.session_state:
     st.session_state.running = False
+if "last_tick" not in st.session_state:
+    st.session_state.last_tick = None
 
 # 🎮 操作ボタン
 start = st.button("スタート")
 pause = st.button("一時停止")
 reset = st.button("クリア")
 
-# 🕹️ 操作処理
+# 🕹️ ボタン処理
 if start:
     st.session_state.running = True
+    st.session_state.last_tick = time.time()
 elif pause:
     st.session_state.running = False
 elif reset:
     st.session_state.running = False
-    st.session_state.remaining = total
+    st.session_state.remaining = initial_total
+    st.session_state.last_tick = None
 
-# 🔁 タイマー表示
-placeholder = st.empty()
-
+# 🔄 時間更新（実行中なら毎秒減らす）
 if st.session_state.running and st.session_state.remaining > 0:
-    for i in range(st.session_state.remaining, -1, -1):
-        h = i // 3600
-        m = (i % 3600) // 60
-        s = i % 60
-        placeholder.markdown(f"## 残り {h:02d}:{m:02d}:{s:02d}")
-        st.session_state.remaining = i
-        time.sleep(1)
-        if not st.session_state.running:
-            break
-    if st.session_state.remaining == 0:
-        st.success("✅ タイマー終了！")
+    now = time.time()
+    if st.session_state.last_tick is not None:
+        elapsed = int(now - st.session_state.last_tick)
+        if elapsed > 0:
+            st.session_state.remaining -= elapsed
+            st.session_state.last_tick = now
+
+# 📺 表示（走ってても止まってても表示する）
+h = st.session_state.remaining // 3600
+m = (st.session_state.remaining % 3600) // 60
+s = st.session_state.remaining % 60
+
+if st.session_state.remaining > 0:
+    st.markdown(f"## 残り {h:02d}:{m:02d}:{s:02d}")
+else:
+    st.success("✅ タイマー終了！")
