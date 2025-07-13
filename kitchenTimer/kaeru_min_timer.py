@@ -3,7 +3,7 @@ import time
 from streamlit_autorefresh import st_autorefresh
 
 # ⏳ 自動再描画（0.1秒ごと）
-st_autorefresh(interval=100, limit=None, key="tick")
+st_autorefresh(interval=250, limit=None, key="tick")
 
 st.title("⏱️ 点滅コロン × リアル描画タイマー")
 
