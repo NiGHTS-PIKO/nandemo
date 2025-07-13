@@ -7,15 +7,13 @@ import matplotlib.font_manager as fm
 import tempfile
 import os
 
-# 日本語フォントの設定（Streamlit Cloud対応）
-font_path = os.path.join(os.path.dirname(__file__), "fonts", "ipaexg.ttf")
+# ✅ 日本語フォントの設定（Streamlit Cloud 対応）
+font_path = os.path.join(os.getcwd(), "fonts", "ipaexg.ttf")
 if os.path.exists(font_path):
     font_prop = fm.FontProperties(fname=font_path)
     plt.rcParams['font.family'] = font_prop.get_name()
 else:
     st.warning("⚠️ IPAexフォントが見つかりません。文字化けの可能性があります。")
-
-st.text(f"使用中のフォント: {plt.rcParams['font.family']}")
 
 # タイトルと説明
 st.title("🧠 日本語入力による自動作図ツール（networkx + matplotlib）")
@@ -68,7 +66,8 @@ if st.button("📊 図を生成"):
         fig, ax = plt.subplots(figsize=(6, 4))
         nx.draw(G, pos, with_labels=True, arrows=True,
                 node_color='lightblue', edge_color='gray',
-                node_size=2000, font_size=10, ax=ax)
+                node_size=2000, font_size=10,
+                font_family=font_prop.get_name(), ax=ax)
 
         st.pyplot(fig)
 
