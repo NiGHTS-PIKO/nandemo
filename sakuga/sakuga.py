@@ -6,20 +6,25 @@ import matplotlib.pyplot as plt
 import matplotlib.font_manager as fm
 import tempfile
 import os
+from pathlib import Path
 
-# sakuga.py の場所から fonts/ipaexg.ttf を探す
-base_dir = os.path.dirname(os.path.abspath(__file__))
-font_path = os.path.join(base_dir, "fonts", "ipaexg.ttf")
+# ✅ 日本語フォントの設定（Path(__file__).parent を使って絶対パスを取得）
+base_dir = Path(__file__).parent
+font_path = base_dir / "fonts" / "ipaexg.ttf"
 
 st.text(f"📁 フォントパス: {font_path}")
-st.text(f"✅ 存在する？: {os.path.exists(font_path)}")
+st.text(f"✅ 存在する？: {font_path.exists()}")
 
-if os.path.exists(font_path):
-    font_prop = fm.FontProperties(fname=font_path)
-    plt.rcParams['font.family'] = font_prop.get_name()
+if font_path.exists():
+    font_prop = fm.FontProperties(fname=str(font_path))
+    font_name = font_prop.get_name()
+    plt.rcParams['font.family'] = font_name
+    st.text(f"📝 使用フォント名: {font_name}")
 else:
+    font_prop = None
+    font_name = None
     st.warning("⚠️ IPAexフォントが見つかりません。文字化けの可能性があります。")
-    
+
 # タイトルと説明
 st.title("🧠 日本語入力による自動作図ツール（networkx + matplotlib）")
 st.markdown("自然な日本語で接続関係を記述するだけで、構造図を自動生成し、PNGやPDF形式で保存できます。")
@@ -72,7 +77,7 @@ if st.button("📊 図を生成"):
         nx.draw(G, pos, with_labels=True, arrows=True,
                 node_color='lightblue', edge_color='gray',
                 node_size=2000, font_size=10,
-                font_family=font_prop.get_name() if 'font_prop' in locals() else None,
+                font_family=font_name if font_name else None,
                 ax=ax)
 
         st.pyplot(fig)
