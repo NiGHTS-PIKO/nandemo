@@ -1,9 +1,8 @@
 import streamlit as st
 import time
 
-st.title("⏱️ 一時停止時に点滅するタイマー")
+st.title("⏱️ コロン点滅タイマー")
 
-# 🧮 時間指定
 col1, col2, col3 = st.columns(3)
 with col1:
     hours = st.number_input("時間", 0, 23, 0)
@@ -12,70 +11,21 @@ with col2:
 with col3:
     seconds = st.number_input("秒", 0, 59, 10)
 
-initial_total = int(hours * 3600 + minutes * 60 + seconds)
+total = int(hours * 3600 + minutes * 60 + seconds)
 
-# 🧠 セッション初期化
-if "remaining" not in st.session_state:
-    st.session_state.remaining = initial_total
-if "running" not in st.session_state:
-    st.session_state.running = False
-if "paused" not in st.session_state:
-    st.session_state.paused = False
-if "last_tick" not in st.session_state:
-    st.session_state.last_tick = None
-if "blink" not in st.session_state:
-    st.session_state.blink = True
+if st.button("スタート！"):
+    placeholder = st.empty()
+    for i in reversed(range(total + 1)):
+        h = i // 3600
+        m = (i % 3600) // 60
+        s = i % 60
 
-# 🎮 操作ボタン
-start = st.button("スタート")
-pause = st.button("一時停止")
-reset = st.button("クリア")
+        # ⌛ 点滅用コロン
+        colon = ":" if i % 2 == 0 else " "
 
-# 🕹️ ボタン処理
-if start:
-    st.session_state.running = True
-    st.session_state.paused = False
-    st.session_state.last_tick = time.time()
-elif pause:
-    st.session_state.running = False
-    st.session_state.paused = True
-elif reset:
-    st.session_state.running = False
-    st.session_state.paused = False
-    st.session_state.remaining = initial_total
-    st.session_state.last_tick = None
-    st.session_state.blink = True
+        time_str = f"{h:02d}{colon}{m:02d}{colon}{s:02d}"
+        placeholder.markdown(f"## 残り {time_str}")
 
-# ⏱️ タイマー更新
-if st.session_state.running and st.session_state.remaining > 0:
-    now = time.time()
-    elapsed = int(now - st.session_state.last_tick)
-    if elapsed > 0:
-        st.session_state.remaining -= elapsed
-        st.session_state.last_tick = now
+        time.sleep(1)
 
-# 👁️ 表示領域
-h = st.session_state.remaining // 3600
-m = (st.session_state.remaining % 3600) // 60
-s = st.session_state.remaining % 60
-
-placeholder = st.empty()
-
-# 🔦 通常表示
-if st.session_state.running:
-    placeholder.markdown(f"## 残り {h:02d}:{m:02d}:{s:02d}")
-
-# 🔁 一時停止中 → 点滅させる
-elif st.session_state.paused:
-    if st.session_state.blink:
-        placeholder.markdown(f"## ⏸️ 残り {h:02d}:{m:02d}:{s:02d}")
-    else:
-        placeholder.markdown(" ")  # 空白表示
-    time.sleep(0.5)  # 点滅間隔
-    st.session_state.blink = not st.session_state.blink
-
-# 🔚 終了時
-if st.session_state.remaining <= 0:
     placeholder.markdown("## ✅ タイマー終了！")
-    st.session_state.running = False
-    st.session_state.paused = False
