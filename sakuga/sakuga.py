@@ -15,6 +15,11 @@ if os.path.exists(font_path):
 else:
     st.warning("⚠️ IPAexフォントが見つかりません。文字化けの可能性があります。")
 
+st.text(f"📁 フォントパス: {font_path}")
+st.text(f"✅ 存在する？: {os.path.exists(font_path)}")
+
+
+
 # タイトルと説明
 st.title("🧠 日本語入力による自動作図ツール（networkx + matplotlib）")
 st.markdown("自然な日本語で接続関係を記述するだけで、構造図を自動生成し、PNGやPDF形式で保存できます。")
