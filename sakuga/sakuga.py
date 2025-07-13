@@ -24,9 +24,8 @@ with st.expander("📘 使い方を見る"):
     ### ▶️ 操作手順：
     1. 下のテキストボックスに接続関係を入力します。
     2. 図の向きを選択します（横向き or 縦向き）。
-    3. 出力形式（PNG / PDF）を選びます。
-    4. 「図を生成」ボタンを押します。
-    5. 下に構造図が表示され、選んだ形式でダウンロードできます。
+    3. 「図を生成（プレビュー）」ボタンを押します。
+    4. 図を確認してから、保存形式を選んで「ファイルを保存」ボタンを押します。
 
     ⚠️ 文の形式が正しくない場合は、図が生成されませんのでご注意ください。
     """)
@@ -41,56 +40,44 @@ layout_direction = st.radio(
 )
 rankdir = "LR" if layout_direction == "左から右（横向き）" else "TB"
 
-# 出力形式の選択
-st.markdown("💾 出力形式を選択してください（複数可）")
-export_png = st.checkbox("PNG形式で保存")
-export_pdf = st.checkbox("PDF形式で保存")
+# 正規表現パターン
+pattern = re.compile(r"(.+?)は(.+?)に接続される")
 
-# ボタンで処理開始
-if st.button("📊 図を生成"):
-    # ノードとエッジの抽出
-    pattern = re.compile(r"(.+?)は(.+?)に接続される")
+# 図を生成（プレビュー）
+if st.button("📊 図を生成（プレビュー）"):
     edges = pattern.findall(user_input)
-
     if not edges:
         st.warning("⚠️ 接続関係が見つかりませんでした。形式を確認してください。")
     else:
-        # Graphvizオブジェクトの作成
         dot = Digraph(format='png')
         dot.attr(rankdir=rankdir, fontname="MS Gothic")
         dot.attr('node', shape='box', style='rounded', fontname="MS Gothic")
-
         for src, dst in edges:
             dot.edge(src.strip(), dst.strip())
 
-        # 表示
         st.graphviz_chart(dot)
+        st.session_state["dot"] = dot  # セッションに保存
 
-        # 一時ファイルに保存してダウンロードリンクを表示
+# 保存処理（プレビュー後に表示）
+if "dot" in st.session_state:
+    st.markdown("💾 出力形式を選んで保存してください")
+    export_png = st.checkbox("PNG形式で保存")
+    export_pdf = st.checkbox("PDF形式で保存")
+
+    if st.button("⬇️ ファイルを保存"):
         with tempfile.TemporaryDirectory() as tmpdirname:
             base_path = os.path.join(tmpdirname, "graph")
+            dot = st.session_state["dot"]
 
-            # PNG出力
             if export_png:
                 png_path = dot.render(base_path, format='png', cleanup=False)
                 with open(png_path, "rb") as f:
-                    st.download_button(
-                        label="⬇️ PNG形式でダウンロード",
-                        data=f,
-                        file_name="graph.png",
-                        mime="image/png"
-                    )
+                    st.download_button("PNG形式でダウンロード", f, "graph.png", "image/png")
 
-            # PDF出力
             if export_pdf:
                 pdf_path = dot.render(base_path, format='pdf', cleanup=False)
                 with open(pdf_path, "rb") as f:
-                    st.download_button(
-                        label="⬇️ PDF形式でダウンロード",
-                        data=f,
-                        file_name="graph.pdf",
-                        mime="application/pdf"
-                    )
+                    st.download_button("PDF形式でダウンロード", f, "graph.pdf", "application/pdf")
 
         if not export_png and not export_pdf:
-            st.info("💡 PNGまたはPDFのいずれかを選択すると、ダウンロードボタンが表示されます。")
+            st.info("💡 PNGまたはPDFのいずれかを選択してください。")
