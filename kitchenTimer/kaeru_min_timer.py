@@ -3,7 +3,7 @@ import time
 from streamlit_autorefresh import st_autorefresh
 
 # ⏳ 自動更新：1秒ごとに再描画（常時点滅のため）
-st_autorefresh(interval=1000, limit=None, key="tick")
+st_autorefresh(interval=500, limit=None, key="tick")
 
 st.title("⏱️ カエル式点滅タイマー")
 
