@@ -1,21 +1,23 @@
 import streamlit as st
 import time
 from streamlit_autorefresh import st_autorefresh
-import numpy as np
 
-# 🔁 0.1秒間隔で描画更新
+# 🔁 描画更新（100ms）
 st_autorefresh(interval=100, limit=None, key="tick")
 
-st.title("⏱️ カエルフェス終了演出タイマー")
+st.title("⏱️ カエルフェスタタイマー")
 
-# 🧠 セッション初期化
-for key in ["hours", "minutes", "seconds", "remaining", "running", "paused", "last_update"]:
+# 🧠 状態初期化
+default_keys = {
+    "hours": 0, "minutes": 0, "seconds": 0,
+    "remaining": 0, "running": False, "paused": False,
+    "last_update": None, "played_frogfest": False
+}
+for key, value in default_keys.items():
     if key not in st.session_state:
-        st.session_state[key] = 0 if key in ["hours", "minutes", "seconds", "remaining"] else False
-if "played_frogfest" not in st.session_state:
-    st.session_state.played_frogfest = False
+        st.session_state[key] = value
 
-# 🕹️ 時間設定
+# 🕹️ 入力欄
 col1, col2, col3 = st.columns(3)
 with col1:
     st.session_state.hours = st.number_input("時間", 0, 23, st.session_state.hours)
@@ -24,15 +26,19 @@ with col2:
 with col3:
     st.session_state.seconds = st.number_input("秒", 0, 59, st.session_state.seconds)
 
-initial_total = int(st.session_state.hours * 3600 +
-                    st.session_state.minutes * 60 +
-                    st.session_state.seconds)
+# ⏱️ 初期時間
+initial_total = int(
+    st.session_state.hours * 3600 +
+    st.session_state.minutes * 60 +
+    st.session_state.seconds
+)
 
-# 🎮 操作ボタン群
+# 🎮 ボタン群
 colA, colB, colC, colD = st.columns(4)
 with colA:
     if st.button("スタート"):
-        st.session_state.remaining = initial_total
+        if not st.session_state.running and not st.session_state.paused:
+            st.session_state.remaining = initial_total  # ✅ 最初だけリセット
         st.session_state.running = True
         st.session_state.paused = False
         st.session_state.last_update = time.time()
@@ -51,10 +57,10 @@ with colC:
 with colD:
     if st.button("🧹オールリセット"):
         for key in ["hours", "minutes", "seconds", "remaining", "running", "paused", "last_update"]:
-            st.session_state[key] = 0 if key in ["hours", "minutes", "seconds", "remaining"] else False
+            st.session_state[key] = 0 if key != "last_update" else None
         st.session_state.played_frogfest = False
 
-# ⏱️ 秒単位カウント
+# ⏳ カウント処理
 if st.session_state.running and st.session_state.remaining > 0:
     now = time.time()
     elapsed = now - st.session_state.last_update
@@ -65,13 +71,13 @@ if st.session_state.running and st.session_state.remaining > 0:
 # 💓 点滅ドット（1秒周期）
 dot = "." if int(time.time()) % 2 == 0 else " "
 
-# 🖼️ 時間表示
+# 🕒 時間表示構築
 h = st.session_state.remaining // 3600
 m = (st.session_state.remaining % 3600) // 60
 s = st.session_state.remaining % 60
 time_str = f"{h:02d}:{m:02d}:{s:02d}{dot}"
 
-# 📺 タイマー表示 or フェス演出
+# 📺 表示フェーズ
 if st.session_state.remaining > 0:
     if st.session_state.running:
         st.markdown(f"## ▶️ {time_str}")
@@ -82,7 +88,7 @@ if st.session_state.remaining > 0:
 else:
     st.session_state.running = False
     st.session_state.paused = False
-    # 🐸 カエル顔点滅（ドットと同期）
+    # 🐸 ケロケロフェス：ドットと同期して10匹点滅
     blink_on = int(time.time()) % 2 == 0
     frogs = "🐸 " * 10 if blink_on else "　" * 10
     st.markdown(f"## {frogs}<br>🎵 ケロケロフェス終了！", unsafe_allow_html=True)
