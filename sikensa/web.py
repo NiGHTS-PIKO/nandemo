@@ -1,33 +1,42 @@
 import streamlit as st
+import re
 
-st.set_page_config(page_title="ラダー図ビューア", layout="centered")
-st.title("🪜 ラダー図ビューア（表示専用）")
+st.set_page_config(page_title="自然言語ラダー図ビューア", layout="centered")
+st.title("🗣️ 自然言語ラダー図ビューア")
 
-# --- ラダー図データの初期化 ---
+# --- 初期化 ---
 if "ladder" not in st.session_state:
     st.session_state.ladder = []
 
-# --- ライン追加 ---
-if st.button("➕ ラダーラインを追加"):
-    new_line = {"line": len(st.session_state.ladder)+1, "elements": []}
-    st.session_state.ladder.append(new_line)
+# --- 自然言語入力 ---
+user_input = st.text_area("自然言語でラダー構造を記述してください（例：X0がONのときY1を動作）")
 
-# --- ライン表示と要素追加UI ---
+# --- 解析と追加 ---
+def parse_ladder(sentence):
+    pattern = r"(X\d+)(?:と(X\d+))?(?:が)?(ON|OFF)?のとき(Y\d+)を(ON|OFF|動作)"
+    matches = re.findall(pattern, sentence)
+    results = []
+    for match in matches:
+        x1, x2, x_state, y, y_state = match
+        elements = []
+        if x1:
+            elements.append({"type": "X", "label": x1, "state": x_state or "ON"})
+        if x2:
+            elements.append({"type": "X", "label": x2, "state": x_state or "ON"})
+        elements.append({"type": "Y", "label": y, "state": y_state or "ON"})
+        results.append({"line": len(st.session_state.ladder)+1, "elements": elements})
+    return results
+
+if st.button("解析して追加"):
+    new_lines = parse_ladder(user_input)
+    if new_lines:
+        st.session_state.ladder.extend(new_lines)
+        st.success(f"{len(new_lines)} 行追加されました")
+    else:
+        st.warning("認識できる構文が見つかりませんでした")
+
+# --- 表示 ---
 for line in st.session_state.ladder:
-    with st.expander(f"🧩 ライン {line['line']} の編集", expanded=True):
-        # 要素入力（接点・コイルなど）
-        col1, col2 = st.columns([2, 1])
-        with col1:
-            new_element = st.text_input("要素名（例：X0 / Y1）", key=f"element_{line['line']}")
-        with col2:
-            elem_type = st.selectbox("タイプ", ["接点 (X)", "コイル (Y)"], key=f"type_{line['line']}")
-        if st.button("追加", key=f"add_{line['line']}") and new_element.strip():
-            line["elements"].append({
-                "type": "X" if "接点" in elem_type else "Y",
-                "label": new_element.strip()
-            })
-
-        # 表示（水平論理回路イメージ）
-        st.markdown("**論理構成図：**")
-        diagram = " ― ".join([f"[{e['type']}] {e['label']}" for e in line["elements"]]) or "（未入力）"
-        st.code(diagram, language="text")
+    diagram = " ― ".join([f"[{e['type']}] {e['label']} ({e['state']})" for e in line["elements"]])
+    st.markdown(f"**ライン {line['line']}**")
+    st.code(diagram, language="text")
