@@ -1,40 +1,33 @@
 import streamlit as st
-import matplotlib.pyplot as plt
-import matplotlib
-import re
 
-# --- 日本語フォント設定（Noto Sans CJK JP など） ---
-matplotlib.rcParams['font.family'] = 'Noto Sans CJK JP'  # 必要に応じて変更可
+st.set_page_config(page_title="ラダー図ビューア", layout="centered")
+st.title("🪜 ラダー図ビューア（表示専用）")
 
-# セッションステート初期化
-if "blocks" not in st.session_state:
-    st.session_state.blocks = []
+# --- ラダー図データの初期化 ---
+if "ladder" not in st.session_state:
+    st.session_state.ladder = []
 
-st.title("🗣️ 自然言語シーケンス図面ビルダー")
+# --- ライン追加 ---
+if st.button("➕ ラダーラインを追加"):
+    new_line = {"line": len(st.session_state.ladder)+1, "elements": []}
+    st.session_state.ladder.append(new_line)
 
-# --- 自然言語入力フォーム ---
-user_input = st.text_area("自然言語で工程を記述してください（例：センサAがステップ0で2秒間ON）")
-if st.button("解析して追加"):
-    # 「〜がステップXでY秒間」パターンを抽出
-    pattern = r"(\S+?)がステップ(\d+)で(\d+)秒"
-    matches = re.findall(pattern, user_input)
-    for name, step, duration in matches:
-        st.session_state.blocks.append({
-            "name": name,
-            "step": int(step),
-            "duration": int(duration)
-        })
+# --- ライン表示と要素追加UI ---
+for line in st.session_state.ladder:
+    with st.expander(f"🧩 ライン {line['line']} の編集", expanded=True):
+        # 要素入力（接点・コイルなど）
+        col1, col2 = st.columns([2, 1])
+        with col1:
+            new_element = st.text_input("要素名（例：X0 / Y1）", key=f"element_{line['line']}")
+        with col2:
+            elem_type = st.selectbox("タイプ", ["接点 (X)", "コイル (Y)"], key=f"type_{line['line']}")
+        if st.button("追加", key=f"add_{line['line']}") and new_element.strip():
+            line["elements"].append({
+                "type": "X" if "接点" in elem_type else "Y",
+                "label": new_element.strip()
+            })
 
-# --- タイミングチャート描画 ---
-fig, ax = plt.subplots(figsize=(8, len(st.session_state.blocks)))
-for block in st.session_state.blocks:
-    ax.barh(block["name"], block["duration"], left=block["step"], color="lightgreen")
-ax.set_xlabel("ステップ")
-ax.set_ylabel("信号ブロック")
-ax.grid(True)
-st.pyplot(fig)
-
-# --- 表形式表示（確認用） ---
-if st.session_state.blocks:
-    st.subheader("📋 現在のブロック一覧")
-    st.table(st.session_state.blocks)
+        # 表示（水平論理回路イメージ）
+        st.markdown("**論理構成図：**")
+        diagram = " ― ".join([f"[{e['type']}] {e['label']}" for e in line["elements"]]) or "（未入力）"
+        st.code(diagram, language="text")
